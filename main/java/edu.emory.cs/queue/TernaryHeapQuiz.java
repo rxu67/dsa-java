@@ -20,7 +20,7 @@ public class TernaryHeapQuiz<T extends Comparable<T>> extends AbstractPriorityQu
 
     @Override
     public int size() {
-        return keys.size() - 1;
+        return keys.size();
     }
 
     /**
@@ -36,38 +36,51 @@ public class TernaryHeapQuiz<T extends Comparable<T>> extends AbstractPriorityQu
     @Override
     public void add(T key) {
         keys.add(key);
-        swim(size());
+        swim(size()-1);
     }
 
     private void swim(int k) {
-        for (; 1 < k && compare((k+1) / 3, k) < 0; k = (k+1)/3)
-            Collections.swap(keys, (k+1) / 3, k);
+        while (0 < k && priority.compare(keys.get(getParentIndex(k)), keys.get(k)) < 0) {
+            Collections.swap(keys, getParentIndex(k), k);
+            k = getParentIndex(k);
+        }
     }
 
     @Override
     public T remove() {
         if (isEmpty()) return null;
-        Collections.swap(keys, 1, size());
-        T max = keys.remove(size());
-        sink();
+        Collections.swap(keys, 0, size()-1);
+        T max = keys.remove(size()-1);
+        sink(0);
         return max;
     }
 
-    private void sink() {
-        for (int k = 1, i  = 2; k <= (size()-1)/3; k = i, i = 3*k - 1) { //what happens if the size  is 2?
-            if (compare(i, i + 1) > 0) {
-                i++;
-                if (compare(i, i + 1) > 0) {
-                    i++;
-                }
-            }
-            else if (compare(i, i + 2) > 0) {
-                i += 2;
-            }
-            if (compare(k, i) >= 0) break;
-            Collections.swap(keys, k, i);
-        }
+    private void sink(int k) {
+        int i, max;
 
+        while ((i = getLeftmostChildIndex(k)) < size()) {
+            max = getMaxIndex(i);
+            if (priority.compare(keys.get(k), keys.get(max)) >= 0)
+                break;
+            Collections.swap(keys, k, max);
+            k = max;
+        }
     }
 
+    private int getParentIndex(int k) {
+        return (k -1 ) / 3;
+    }
+    private int getLeftmostChildIndex(int k) {
+        return k * 3 + 1;
+    }
+
+    private int getMaxIndex(int leftmostIndex) {
+        int max = leftmostIndex;
+
+        for (int i = leftmostIndex + 1; i < size() && i < leftmostIndex + 2;i++) {
+            if (priority.compare(keys.get(max), keys.get(i)) < 0)
+                max = i;
+        }
+        return max;
+    }
 }
