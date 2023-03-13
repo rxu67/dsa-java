@@ -16,7 +16,6 @@
 
 package edu.emory.cs.trie;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TrieQuiz extends Trie<Integer> {

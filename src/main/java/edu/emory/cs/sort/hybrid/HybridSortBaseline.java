@@ -3,7 +3,6 @@ package edu.emory.cs.sort.hybrid;
 import edu.emory.cs.sort.AbstractSort;
 import edu.emory.cs.sort.comparison.ShellSortKnuth;
 import edu.emory.cs.sort.divide_conquer.IntroSort;
-import edu.emory.cs.sort.divide_conquer.QuickSort;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;

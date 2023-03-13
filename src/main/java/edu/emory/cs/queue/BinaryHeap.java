@@ -1,9 +1,6 @@
 package edu.emory.cs.queue;
 
 import java.util.*;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class BinaryHeap<T extends Comparable<T>> extends AbstractPriorityQueue<T> {
     private final List<T> keys;

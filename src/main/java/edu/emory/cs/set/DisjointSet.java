@@ -37,6 +37,8 @@ public class DisjointSet {
         return (subsets[key] < 0) ? key : (subsets[key] = find(subsets[key]));
     }
 
+    //uses the changed subset key as a reference
+
     /**
      * @param key1 the first key to be compared.
      * @param key2 the second key to be compared.
