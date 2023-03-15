@@ -3,73 +3,90 @@ package edu.emory.cs.sort.hybrid;
 
 import edu.emory.cs.sort.AbstractSort;
 import edu.emory.cs.sort.comparison.ShellSortKnuth;
-import edu.emory.cs.sort.divide_conquer.IntroSort;
+import edu.emory.cs.sort.divide_conquer.QuickSort;
 
 import java.lang.reflect.Array;
-import java.util.*;
+
 
 public class HybridSortHW<T extends Comparable<T>> implements HybridSort<T> {
 
-    private final AbstractSort<T> engine;
+    private final AbstractSort<T> sortOrg;
+    private final AbstractSort<T> sortRand;
 
     public HybridSortHW() {
-        engine = new IntroSort<T>(new ShellSortKnuth<T>());
+        sortOrg = new ShellSortKnuth<>();
+        sortRand = new QuickSort<>();
     }
 
     @Override
     public T[] sort(T[][] input) {
-        int k = input.length;
-        int[] index = new int[k];
-        int size = Arrays.stream(input).mapToInt(t -> t.length).sum();
-        T[] output = (T[]) Array.newInstance(input[0][0].getClass(), size);
+        int length = input.length;
+        //sort arrays
+        for (int i = 0; i < length; i++) {
+            presort(input[i]);
+        }
+        //combine arrays
+        while (length> 1) {
+            int k = (length+ 1) / 2;
+            for (int i = 0; i < length/ 2; i++) {
+                input[i] = merge(input[i], input[i + k]);
+            }
+            length= k;
+        }
 
-        PriorityQueue<Integer> minHeap = new PriorityQueue<>(k, Comparator.comparing(a -> input[a][index[a]]));
-        for (int i = 0; i < k; i++) {
-            if (input[i].length > 0) {
-                presort(input[i]);
-                minHeap.offer(i);
-            }
-        }
-        int i = 0;
-        while (!minHeap.isEmpty()) {
-            int minIndex = minHeap.poll();
-            output[i++] = input[minIndex][index[minIndex]];
-            index[minIndex]++;
-            if (index[minIndex] < input[minIndex].length) {
-                minHeap.offer(minIndex);
-            }
-        }
-        return output;
+        return input[0];
     }
 
     public void presort(T[] subinput) {
-        //flip if reverse
-        if (subinput[0].compareTo(subinput[subinput.length - 1]) > 0) {
+        int sortindex = 0;
+        //check a sample of elements to compare to the first one to get an idea of ascending/descending
+        int step = (int) Math.log(subinput.length);
+        for (int i = step; i < subinput.length; i += step) {
+            if (subinput[0].compareTo(subinput[i]) > 0) {
+                sortindex++;
+            }
+        }
+
+        //flip if the array seems to be mostly descending
+        if (sortindex > 0.8 * subinput.length/step) {
             for (int i = 0, j = subinput.length - 1; i < j; i++, j--) {
                 T temp = subinput[i];
                 subinput[i] = subinput[j];
                 subinput[j] = temp;
             }
+            sortOrg.sort(subinput);
         }
 
-        //if sorted ascending
-        /*if () {*/
+        //ascending case
+        else if (sortindex <= 0.2 * subinput.length/step) {
+            sortOrg.sort(subinput);
+        }
 
-        //if mostly ascending
-        engine.sort(subinput);
-    }
-
-
-    public static void main(String[] args) {
-        HybridSort<Integer> mine = new HybridSortHW<>();  // TODO: replace with your class
-
-        Integer[][] input = {{0, 1, 2, 3}, {7, 6, 5, 4}, {0, 3, 1, 2}, {4, 7, 6, 5}, {9, 8, 11, 10}};
-        Integer[] auto = mine.sort(input);
-        for (int i = 0; i < auto.length; i++) {
-            System.out.print(auto[i]+ " ");
+        //random case
+        else {
+            sortRand.sort(subinput);
         }
     }
+
+    public T[] merge(T[] left, T[] right) {
+        T[] merged = (T[]) Array.newInstance(left.getClass().getComponentType(), left.length + right.length);
+        //compare between the two arrays
+        int i = 0, j = 0, k = 0;
+        while (i < left.length && j < right.length) {
+            if (left[i].compareTo(right[j]) < 0) {
+                merged[k++] = left[i++];
+            } else {
+                merged[k++] = right[j++];
+            }
+        }
+        //cases for when an array runs out of elements
+        if (i == left.length) {
+            System.arraycopy(right, j, merged, k, right.length - j);
+        } else {
+            System.arraycopy(left, i, merged, k, left.length - i);
+        }
+
+        return merged;
+    }
+
 }
-/*
-*
-* */
